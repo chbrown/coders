@@ -12,7 +12,11 @@
   "author": "Christopher Brown <io@henrian.com> (http://henrian.com)",
   "license": "MIT",
   "devDependencies": {
-    "typescript-declare": "*",
-    "typescript": "*"
+    "mocha": "*",
+    "typescript": "*",
+    "typescript-declare": "*"
+  },
+  "scripts": {
+    "test": "make test"
   }
 }
