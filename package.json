@@ -1,0 +1,18 @@
+{
+  "name": "coders",
+  "description": "Encoders and decoders for converting between bytes and strings",
+  "keywords": [
+    "decode",
+    "encode",
+    "base64"
+  ],
+  "version": "0.1.0",
+  "homepage": "https://github.com/chbrown/coders",
+  "repository": "git://github.com/chbrown/coders.git",
+  "author": "Christopher Brown <io@henrian.com> (http://henrian.com)",
+  "license": "MIT",
+  "devDependencies": {
+    "typescript-declare": "*",
+    "typescript": "*"
+  }
+}
