@@ -10,28 +10,35 @@ obscured (encoded) format is the base64 string.
 
 export const STANDARD_ALPHABET = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=';
 
+export function makeString(charCodes: number[]): string {
+  return String.fromCharCode.apply(null, charCodes);
+}
+
+export function unmakeString(str: string): number[] {
+  var length = str.length;
+  var charCodes = new Array<number>(length);
+  for (var i = 0; i < length; i++) {
+    charCodes[i] = str.charCodeAt(i);
+  }
+  return charCodes;
+}
+
 /**
 Convert a Uint8Array or Array of numbers (in which case each element should be
-in the range 0-255) and returns a native Javascript string representation of
-the bytes in base64.
+in the range 0-255) and returns an Array of numbers in the range 0-64.
 
 Mostly from https://gist.github.com/jonleighton/958841, benchmarks at
 http://jsperf.com/encoding-xhr-image-data/5
-
-`alphabet` should contain 65 characters, where `alphabet[64]` is the padding
-character.
 */
-export function encodeBytes(bytes: number[] | Uint8Array,
-                            alphabet = STANDARD_ALPHABET): string {
+export function encode(bytes: number[] | Uint8Array): number[] {
   var bytes_length = bytes.length;
   var byte_remainder = bytes_length % 3;
   var string_length = bytes_length - byte_remainder;
-  var padding = alphabet[64];
 
   var a: number, b: number, c: number, d: number;
   var chunk: number;
 
-  var characters: string[] = [];
+  var indices: number[] = [];
 
   // Main loop deals with bytes in chunks of 3
   for (var i = 0; i < string_length; i += 3) {
@@ -43,7 +50,7 @@ export function encodeBytes(bytes: number[] | Uint8Array,
     c = (chunk & 4032)     >>  6; // 4032     = (2^6 - 1) << 6
     d = chunk & 63;               // 63       = 2^6 - 1
     // Convert the raw binary segments to the appropriate ASCII encoding
-    characters.push(alphabet[a], alphabet[b], alphabet[c], alphabet[d]);
+    indices.push(a, b, c, d);
   }
 
   // Deal with the remaining bytes and padding
@@ -52,7 +59,7 @@ export function encodeBytes(bytes: number[] | Uint8Array,
     a = (chunk & 252) >> 2; // 252 = (2^6 - 1) << 2
     // Set the 4 least significant bits to zero
     b = (chunk & 3)   << 4; // 3   = 2^2 - 1
-    characters.push(alphabet[a], alphabet[b], padding, padding);
+    indices.push(a, b, 64, 64);
   }
   else if (byte_remainder == 2) {
     chunk = (bytes[string_length] << 8) | bytes[string_length + 1];
@@ -60,37 +67,56 @@ export function encodeBytes(bytes: number[] | Uint8Array,
     b = (chunk & 1008)  >>  4; // 1008  = (2^6 - 1) << 4
     // Set the 2 least significant bits to zero
     c = (chunk & 15)    <<  2; // 15    = 2^4 - 1
-    characters.push(alphabet[a], alphabet[b], alphabet[c], padding);
+    indices.push(a, b, c, 64);
   }
   // otherwise: no padding required
 
-  return characters.join('');
+  return indices;
 }
 
 /**
-Decode a base64-encoded Javascript string into an array of numbers, all of will
-be in the range 0-255 (i.e., byte-sized).
+Convert a Uint8Array or Array of numbers (in which case each element should be
+in the range 0-255) and returns a native Javascript string representation of
+the bytes in base64.
+
+Mostly from https://gist.github.com/jonleighton/958841, benchmarks at
+http://jsperf.com/encoding-xhr-image-data/5
+
+`alphabet` should contain 65 characters, where `alphabet[64]` is the padding
+character.
+*/
+export function encodeStringToString(raw_string: string,
+                                     alphabet = STANDARD_ALPHABET): string {
+  var bytes = unmakeString(raw_string);
+  var indices = encode(bytes);
+  return indices.map(i => alphabet[i]).join('');
+}
+
+/**
+Decode an Array of numbers in the range 0-64 to an Array of numbers in the range
+0-255 (i.e., byte-sized).
 
 Based on https://github.com/danguer/blog-examples/blob/master/js/base64-binary.js,
 which is Copyright 2011, Daniel Guerrero, BSD Licensed.
 */
-export function decodeString(str: string,
-                             alphabet = STANDARD_ALPHABET): number[] {
-  var string_length = str.length;
+export function decode(indices: number[]): number[] {
+  console.error('decode', indices);
+  var length = indices.length;
   var bytes: number[] = [];
-  for (var index = 0; index < string_length; index += 4) {
+  for (var index = 0; index < length; index += 4) {
     // get the values of the next 4 base64 chars
-    var c1 = alphabet.indexOf(str[index    ]);
-    var c2 = alphabet.indexOf(str[index + 1]);
-    var c3 = alphabet.indexOf(str[index + 2]);
-    var c4 = alphabet.indexOf(str[index + 3]);
+    var c1 = indices[index    ];
+    var c2 = indices[index + 1];
+    var c3 = indices[index + 2];
+    var c4 = indices[index + 3];
     // and derive the original bytes from them
     var b1 = (c1 << 2) | (c2 >> 4);
     var b2 = ((c2 & 15) << 4) | (c3 >> 2);
     var b3 = ((c3 & 3) << 6) | c4;
     // detect padding chars and adjust final length accordingly
-    if (c3 === 64) {
-      if (c4 === 64) {
+    console.error('bytes', c1, c2, c3, c4, '->', makeString([b1, b2, b3]));
+    if (c4 === 64) {
+      if (c3 === 64) {
         // 2 padding bytes
         bytes.push(b1);
       }
@@ -104,6 +130,21 @@ export function decodeString(str: string,
       bytes.push(b1, b2, b3);
     }
   }
-
   return bytes;
+}
+
+
+/**
+Decode a base64-encoded Javascript string into an array of numbers, all of will
+be in the range 0-255 (i.e., byte-sized).
+
+Based on https://github.com/danguer/blog-examples/blob/master/js/base64-binary.js,
+which is Copyright 2011, Daniel Guerrero, BSD Licensed.
+*/
+export function decodeStringToString(base64_string: string,
+                                     alphabet = STANDARD_ALPHABET): string {
+  // TODO: optimize this with a for loop and an alphabet hashtable
+  var indices = base64_string.split('').map(character => alphabet.indexOf(character));
+  var charCodes = decode(indices);
+  return makeString(charCodes);
 }
