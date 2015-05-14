@@ -6,7 +6,7 @@
     "encode",
     "base64"
   ],
-  "version": "0.1.0",
+  "version": "0.1.1",
   "homepage": "https://github.com/chbrown/coders",
   "repository": "git://github.com/chbrown/coders.git",
   "author": "Christopher Brown <io@henrian.com> (http://henrian.com)",
