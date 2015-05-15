@@ -88,6 +88,11 @@ character.
 export function encodeStringToString(raw_string: string,
                                      alphabet = STANDARD_ALPHABET): string {
   var bytes = unmakeString(raw_string);
+  return encodeBytesToString(bytes, alphabet);
+}
+
+export function encodeBytesToString(bytes: number[] | Uint8Array,
+                                    alphabet = STANDARD_ALPHABET): string {
   var indices = encode(bytes);
   return indices.map(i => alphabet[i]).join('');
 }
@@ -100,7 +105,6 @@ Based on https://github.com/danguer/blog-examples/blob/master/js/base64-binary.j
 which is Copyright 2011, Daniel Guerrero, BSD Licensed.
 */
 export function decode(indices: number[]): number[] {
-  console.error('decode', indices);
   var length = indices.length;
   var bytes: number[] = [];
   for (var index = 0; index < length; index += 4) {
@@ -114,7 +118,6 @@ export function decode(indices: number[]): number[] {
     var b2 = ((c2 & 15) << 4) | (c3 >> 2);
     var b3 = ((c3 & 3) << 6) | c4;
     // detect padding chars and adjust final length accordingly
-    console.error('bytes', c1, c2, c3, c4, '->', makeString([b1, b2, b3]));
     if (c4 === 64) {
       if (c3 === 64) {
         // 2 padding bytes
@@ -143,8 +146,13 @@ which is Copyright 2011, Daniel Guerrero, BSD Licensed.
 */
 export function decodeStringToString(base64_string: string,
                                      alphabet = STANDARD_ALPHABET): string {
+  var charCodes = decodeStringToBytes(base64_string, alphabet);
+  return makeString(charCodes);
+}
+
+export function decodeStringToBytes(base64_string: string,
+                                    alphabet = STANDARD_ALPHABET): number[] {
   // TODO: optimize this with a for loop and an alphabet hashtable
   var indices = base64_string.split('').map(character => alphabet.indexOf(character));
-  var charCodes = decode(indices);
-  return makeString(charCodes);
+  return decode(indices);
 }
