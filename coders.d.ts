@@ -32,6 +32,7 @@ declare module "coders" {
         character.
         */
         function encodeStringToString(raw_string: string, alphabet?: string): string;
+        function encodeBytesToString(bytes: number[] | Uint8Array, alphabet?: string): string;
         /**
         Decode an Array of numbers in the range 0-64 to an Array of numbers in the range
         0-255 (i.e., byte-sized).
@@ -48,5 +49,6 @@ declare module "coders" {
         which is Copyright 2011, Daniel Guerrero, BSD Licensed.
         */
         function decodeStringToString(base64_string: string, alphabet?: string): string;
+        function decodeStringToBytes(base64_string: string, alphabet?: string): number[];
     }
 }

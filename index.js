@@ -85,10 +85,15 @@ var coders;
         function encodeStringToString(raw_string, alphabet) {
             if (alphabet === void 0) { alphabet = base64.STANDARD_ALPHABET; }
             var bytes = unmakeString(raw_string);
+            return encodeBytesToString(bytes, alphabet);
+        }
+        base64.encodeStringToString = encodeStringToString;
+        function encodeBytesToString(bytes, alphabet) {
+            if (alphabet === void 0) { alphabet = base64.STANDARD_ALPHABET; }
             var indices = encode(bytes);
             return indices.map(function (i) { return alphabet[i]; }).join('');
         }
-        base64.encodeStringToString = encodeStringToString;
+        base64.encodeBytesToString = encodeBytesToString;
         /**
         Decode an Array of numbers in the range 0-64 to an Array of numbers in the range
         0-255 (i.e., byte-sized).
@@ -97,7 +102,6 @@ var coders;
         which is Copyright 2011, Daniel Guerrero, BSD Licensed.
         */
         function decode(indices) {
-            console.error('decode', indices);
             var length = indices.length;
             var bytes = [];
             for (var index = 0; index < length; index += 4) {
@@ -111,7 +115,6 @@ var coders;
                 var b2 = ((c2 & 15) << 4) | (c3 >> 2);
                 var b3 = ((c3 & 3) << 6) | c4;
                 // detect padding chars and adjust final length accordingly
-                console.error('bytes', c1, c2, c3, c4, '->', makeString([b1, b2, b3]));
                 if (c4 === 64) {
                     if (c3 === 64) {
                         // 2 padding bytes
@@ -139,12 +142,17 @@ var coders;
         */
         function decodeStringToString(base64_string, alphabet) {
             if (alphabet === void 0) { alphabet = base64.STANDARD_ALPHABET; }
-            // TODO: optimize this with a for loop and an alphabet hashtable
-            var indices = base64_string.split('').map(function (character) { return alphabet.indexOf(character); });
-            var charCodes = decode(indices);
+            var charCodes = decodeStringToBytes(base64_string, alphabet);
             return makeString(charCodes);
         }
         base64.decodeStringToString = decodeStringToString;
+        function decodeStringToBytes(base64_string, alphabet) {
+            if (alphabet === void 0) { alphabet = base64.STANDARD_ALPHABET; }
+            // TODO: optimize this with a for loop and an alphabet hashtable
+            var indices = base64_string.split('').map(function (character) { return alphabet.indexOf(character); });
+            return decode(indices);
+        }
+        base64.decodeStringToBytes = decodeStringToBytes;
     })(base64 = coders.base64 || (coders.base64 = {}));
 })(coders || (coders = {}));
 module.exports = coders;
