@@ -8,13 +8,17 @@
   ],
   "version": "0.1.3",
   "homepage": "https://github.com/chbrown/coders",
-  "repository": "git://github.com/chbrown/coders.git",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/chbrown/coders.git"
+  },
   "author": "Christopher Brown <io@henrian.com> (http://henrian.com)",
   "license": "MIT",
   "devDependencies": {
+    "babel-core": "^5.0.0",
+    "declarations": "*",
     "mocha": "*",
-    "typescript": "*",
-    "typescript-declare": "*"
+    "typescript": "next"
   },
   "scripts": {
     "test": "make test"
