@@ -1,5 +1,7 @@
 tests/
 base64.ts
 index.ts
+unicode.ts
 Makefile
 tsconfig.json
+coverage/

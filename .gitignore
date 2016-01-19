@@ -1,2 +1,7 @@
-base64.js
-index.js
+/base64.js
+/base64.d.ts
+/index.js
+/index.d.ts
+/unicode.js
+/unicode.d.ts
+/coverage/

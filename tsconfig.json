@@ -6,6 +6,7 @@
   "files": [
     "node_modules/declarations/node/node.d.ts",
     "base64.ts",
-    "index.ts"
+    "index.ts",
+    "unicode.ts"
   ]
 }

@@ -1,12 +1,17 @@
 BIN := node_modules/.bin
+TYPESCRIPT := $(shell jq -r '.files[]' tsconfig.json | grep -Fv .d.ts)
 
-all: base64.js index.js
+all: $(TYPESCRIPT:%.ts=%.js) $(TYPESCRIPT:%.ts=%.d.ts)
 
-$(BIN)/tsc $(BIN)/mocha:
+$(BIN)/tsc $(BIN)/_mocha $(BIN)/istanbul $(BIN)/coveralls:
 	npm install
 
-%.js: %.ts $(BIN)/tsc
-	$(BIN)/tsc
+%.js %.d.ts: %.ts $(BIN)/tsc
+	$(BIN)/tsc -d
 
-test: $(JAVASCRIPT) $(BIN)/mocha
-	$(BIN)/mocha --compilers js:babel-core/register tests/
+test: $(TYPESCRIPT:%.ts=%.js) $(BIN)/istanbul $(BIN)/_mocha $(BIN)/coveralls
+	$(BIN)/istanbul cover $(BIN)/_mocha -- --compilers js:babel-core/register tests/ -R spec
+	cat coverage/lcov.info | $(BIN)/coveralls || true
+
+clean:
+	rm -f $(TYPESCRIPT:%.ts=%.js) $(TYPESCRIPT:%.ts=%.d.ts)
